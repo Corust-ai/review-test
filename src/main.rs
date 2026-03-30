@@ -1,4 +1,4 @@
-use axum::{Router, routing::get, Json};
+use axum::{Router, routing::{get, post}, Json};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use std::sync::Arc;
@@ -6,6 +6,12 @@ use std::sync::Arc;
 #[derive(Serialize, Deserialize)]
 struct User {
     id: i64,
+    name: String,
+    email: String,
+}
+
+#[derive(Deserialize)]
+struct CreateUser {
     name: String,
     email: String,
 }
@@ -24,13 +30,29 @@ async fn list_users(state: axum::extract::State<Arc<AppState>>) -> Json<Vec<User
 
 async fn create_user(
     state: axum::extract::State<Arc<AppState>>,
-    Json(input): Json<User>,
+    Json(input): Json<CreateUser>,
 ) -> Json<User> {
-    sqlx::query!("INSERT INTO users (name, email) VALUES ($1, $2)", input.name, input.email)
+    let row = sqlx::query_as!(
+        User,
+        "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id, name, email",
+        input.name,
+        input.email
+    )
+    .fetch_one(&state.db)
+    .await
+    .unwrap();
+    Json(row)
+}
+
+async fn delete_user(
+    state: axum::extract::State<Arc<AppState>>,
+    axum::extract::Path(id): axum::extract::Path<i64>,
+) -> &'static str {
+    sqlx::query!("DELETE FROM users WHERE id = $1", id)
         .execute(&state.db)
         .await
         .unwrap();
-    Json(input)
+    "deleted"
 }
 
 async fn health() -> &'static str {
@@ -47,6 +69,7 @@ async fn main() {
     let app = Router::new()
         .route("/health", get(health))
         .route("/users", get(list_users).post(create_user))
+        .route("/users/{id}", axum::routing::delete(delete_user))
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
