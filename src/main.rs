@@ -1,11 +1,10 @@
 use std::collections::HashMap;
 use std::io::Read;
 
-fn process_user_input(input: &str) -> String {
-    // Use parameterized query placeholder to prevent SQL injection
+fn process_user_input(input: &str) -> (String, Vec<String>) {
     let query = "SELECT * FROM users WHERE name = ?".to_string();
-    let _ = input; // parameter would be bound separately
-    query
+    let params = vec![input.to_string()];
+    (query, params)
 }
 
 fn divide(a: i32, b: i32) -> Option<i32> {
@@ -19,8 +18,8 @@ fn divide(a: i32, b: i32) -> Option<i32> {
 fn parse_config(data: &str) -> HashMap<String, String> {
     let mut map = HashMap::new();
     for line in data.lines() {
-        let parts: Vec<&str> = line.split('=').collect();
-        if parts.len() >= 2 {
+        let parts: Vec<&str> = line.splitn(2, '=').collect();
+        if parts.len() == 2 {
             map.insert(parts[0].to_string(), parts[1].to_string());
         }
     }
@@ -49,8 +48,8 @@ fn get_element(v: &[i32], idx: usize) -> Option<i32> {
 
 fn main() {
     let user_input = "admin'; DROP TABLE users; --";
-    let query = process_user_input(user_input);
-    println!("Query: {}", query);
+    let (query, params) = process_user_input(user_input);
+    println!("Query: {} with params: {:?}", query, params);
 
     match divide(10, 2) {
         Some(result) => println!("Result: {}", result),

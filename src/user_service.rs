@@ -23,7 +23,8 @@ impl UserData {
     }
 
     pub fn validate_email(&self) -> bool {
-        self.email.contains("@")
+        let parts: Vec<&str> = self.email.split('@').collect();
+        parts.len() == 2 && !parts[0].is_empty() && !parts[1].is_empty() && parts[1].contains('.')
     }
 }
 
@@ -31,8 +32,11 @@ pub fn fetch_user(db: &HashMap<String, UserData>, id: &str) -> Option<UserData> 
     db.get(id).cloned()
 }
 
-pub fn calculate_discount(price: f64, discount_pct: f64) -> f64 {
-    price - (price * discount_pct / 100.0)
+pub fn calculate_discount(price: f64, discount_pct: f64) -> Option<f64> {
+    if !(0.0..=100.0).contains(&discount_pct) {
+        return None;
+    }
+    Some(price - (price * discount_pct / 100.0))
 }
 
 pub fn process_users(users: &[UserData]) -> Vec<String> {
@@ -53,6 +57,3 @@ pub fn build_greeting(user: &UserData) -> String {
     }
 }
 
-fn log_action(msg: &str) {
-    println!("{}", msg);
-}
