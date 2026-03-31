@@ -19,8 +19,8 @@ fn divide(a: i32, b: i32) -> Option<i32> {
 fn parse_config(data: &str) -> HashMap<String, String> {
     let mut map = HashMap::new();
     for line in data.lines() {
-        let parts: Vec<&str> = line.split('=').collect();
-        if parts.len() >= 2 {
+        let parts: Vec<&str> = line.splitn(2, '=').collect();
+        if parts.len() == 2 {
             map.insert(parts[0].to_string(), parts[1].to_string());
         }
     }
