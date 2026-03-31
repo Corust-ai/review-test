@@ -1,4 +1,4 @@
-use axum::{Router, routing::{get, post}, Json};
+use axum::{http::StatusCode, Router, routing::get, Json};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use std::sync::Arc;
@@ -20,18 +20,20 @@ struct AppState {
     db: PgPool,
 }
 
-async fn list_users(state: axum::extract::State<Arc<AppState>>) -> Json<Vec<User>> {
+async fn list_users(
+    state: axum::extract::State<Arc<AppState>>,
+) -> Result<Json<Vec<User>>, StatusCode> {
     let users = sqlx::query_as!(User, "SELECT id, name, email FROM users")
         .fetch_all(&state.db)
         .await
-        .unwrap();
-    Json(users)
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    Ok(Json(users))
 }
 
 async fn create_user(
     state: axum::extract::State<Arc<AppState>>,
     Json(input): Json<CreateUser>,
-) -> Json<User> {
+) -> Result<Json<User>, StatusCode> {
     let row = sqlx::query_as!(
         User,
         "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id, name, email",
@@ -40,19 +42,19 @@ async fn create_user(
     )
     .fetch_one(&state.db)
     .await
-    .unwrap();
-    Json(row)
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    Ok(Json(row))
 }
 
 async fn delete_user(
     state: axum::extract::State<Arc<AppState>>,
     axum::extract::Path(id): axum::extract::Path<i64>,
-) -> &'static str {
+) -> Result<&'static str, StatusCode> {
     sqlx::query!("DELETE FROM users WHERE id = $1", id)
         .execute(&state.db)
         .await
-        .unwrap();
-    "deleted"
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    Ok("deleted")
 }
 
 async fn health() -> &'static str {
@@ -60,9 +62,9 @@ async fn health() -> &'static str {
 }
 
 #[tokio::main]
-async fn main() {
-    let db_url = std::env::var("DATABASE_URL").unwrap();
-    let pool = PgPool::connect(&db_url).await.unwrap();
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pool = PgPool::connect(&db_url).await?;
 
     let state = Arc::new(AppState { db: pool });
 
@@ -72,6 +74,8 @@ async fn main() {
         .route("/users/{id}", axum::routing::delete(delete_user))
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
+    axum::serve(listener, app).await?;
+
+    Ok(())
 }
