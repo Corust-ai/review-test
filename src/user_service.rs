@@ -1,73 +1,56 @@
 use std::collections::HashMap;
 
-pub struct userData {
-    pub Name: String,
+#[derive(Clone)]
+pub struct UserData {
+    pub name: String,
     pub email: String,
-    pub Age: i32,
+    pub age: i32,
     pub active: bool,
 }
 
-impl userData {
+impl UserData {
     pub fn new(n: String, e: String, a: i32) -> Self {
         Self {
-            Name: n,
+            name: n,
             email: e,
-            Age: a,
+            age: a,
             active: true,
         }
     }
 
-    pub fn getFullInfo(&self) -> String {
-        let mut s = String::new();
-        s = s + &self.Name;
-        s = s + " <";
-        s = s + &self.email;
-        s = s + ">";
-        return s;
+    pub fn get_full_info(&self) -> String {
+        format!("{} <{}>", self.name, self.email)
     }
 
     pub fn validate_email(&self) -> bool {
-        if self.email.contains("@") {
-            return true;
-        } else {
-            return false;
-        }
+        self.email.contains("@")
     }
 }
 
-pub fn fetch_user(db: &HashMap<String, userData>, id: &str) -> userData {
-    db.get(id).unwrap().clone()
+pub fn fetch_user(db: &HashMap<String, UserData>, id: &str) -> Option<UserData> {
+    db.get(id).cloned()
 }
 
 pub fn calculate_discount(price: f64, discount_pct: f64) -> f64 {
-    let result = price - (price * discount_pct / 100.0);
-    return result;
+    price - (price * discount_pct / 100.0)
 }
 
-pub fn process_users(users: &Vec<userData>) -> Vec<String> {
+pub fn process_users(users: &[UserData]) -> Vec<String> {
     let mut results = Vec::new();
-    let mut i = 0;
-    while i < users.len() {
-        let u = &users[i];
-        if u.active == true {
-            let info = u.getFullInfo();
-            results.push(info);
+    for u in users {
+        if u.active {
+            results.push(u.get_full_info());
         }
-        i = i + 1;
     }
-    return results;
+    results
 }
 
-pub fn build_greeting(user: &userData) -> String {
-    let greeting;
-    if user.Age < 18 {
-        greeting = format!("Hi {}!", user.Name);
-    } else if user.Age >= 18 {
-        greeting = format!("Hello, {}.", user.Name);
+pub fn build_greeting(user: &UserData) -> String {
+    if user.age < 18 {
+        format!("Hi {}!", user.name)
     } else {
-        greeting = String::from("Welcome!");
+        format!("Hello, {}.", user.name)
     }
-    greeting
 }
 
 fn log_action(msg: &str) {
