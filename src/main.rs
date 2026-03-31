@@ -50,10 +50,13 @@ async fn delete_user(
     state: axum::extract::State<Arc<AppState>>,
     axum::extract::Path(id): axum::extract::Path<i64>,
 ) -> Result<&'static str, StatusCode> {
-    sqlx::query!("DELETE FROM users WHERE id = $1", id)
+    let result = sqlx::query!("DELETE FROM users WHERE id = $1", id)
         .execute(&state.db)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    if result.rows_affected() == 0 {
+        return Err(StatusCode::NOT_FOUND);
+    }
     Ok("deleted")
 }
 
