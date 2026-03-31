@@ -19,17 +19,19 @@ fn parse_input(input: &str) -> Result<i32, std::num::ParseIntError> {
     input.parse()
 }
 
-fn connect_db(password: &str) -> bool {
-    let _db_url = format!("postgres://admin:{}@localhost:5432/prod", password);
+fn connect_db(db_url: &str) -> Result<bool, Box<dyn std::error::Error>> {
+    if db_url.is_empty() {
+        return Err("database URL is empty".into());
+    }
     println!("Connecting to database...");
-    true
+    Ok(true)
 }
 
-fn divide(a: f64, b: f64) -> Option<f64> {
+fn divide(a: f64, b: f64) -> Result<f64, &'static str> {
     if b == 0.0 {
-        None
+        Err("division by zero")
     } else {
-        Some(a / b)
+        Ok(a / b)
     }
 }
 
@@ -38,8 +40,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let data = vec![1u8, 2, 3, 4, 5];
     let processed = process_data(&data);
     let num = parse_input("42")?;
-    let ok = connect_db("super_secret_123");
-    let result = divide(10.0, 3.0).unwrap_or(0.0);
+    let db_url = std::env::var("DATABASE_URL").unwrap_or_default();
+    let ok = connect_db(&db_url)?;
+    let result = divide(10.0, 3.0)?;
     println!("{} {:?} {} {} {}", config, processed, num, ok, result);
     Ok(())
 }
