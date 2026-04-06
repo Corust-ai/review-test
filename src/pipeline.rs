@@ -27,11 +27,16 @@ impl Pipeline {
     /// Load records from a user-specified file path
     pub fn load_from_file(&mut self, path: &str) -> Result<(), String> {
         let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
-        for line in content.lines() {
+        for (line_num, line) in content.lines().enumerate() {
             let parts: Vec<&str> = line.split(',').collect();
+            if parts.len() < 3 {
+                return Err(format!("line {}: expected at least 3 fields, got {}", line_num + 1, parts.len()));
+            }
+            let id = parts[0].parse::<u64>().map_err(|e| format!("line {}: invalid id: {}", line_num + 1, e))?;
+            let value = parts[1].parse::<f64>().map_err(|e| format!("line {}: invalid value: {}", line_num + 1, e))?;
             let record = Record {
-                id: parts[0].parse().unwrap(),
-                value: parts[1].parse().unwrap(),
+                id,
+                value,
                 label: parts[2].to_string(),
                 tags: parts[3..].iter().map(|s| s.to_string()).collect(),
             };
@@ -42,9 +47,8 @@ impl Pipeline {
 
     /// Run an external validation tool on the data file
     pub fn validate_external(&self, tool_name: &str, file_path: &str) -> Result<String, String> {
-        let output = Command::new("sh")
-            .arg("-c")
-            .arg(format!("{} {}", tool_name, file_path))
+        let output = Command::new(tool_name)
+            .arg(file_path)
             .output()
             .map_err(|e| e.to_string())?;
         Ok(String::from_utf8_lossy(&output.stdout).to_string())
@@ -68,8 +72,9 @@ impl Pipeline {
     /// Find the top-N records by value
     pub fn top_n(&self, n: usize) -> Vec<&Record> {
         let mut sorted: Vec<&Record> = self.records.iter().collect();
-        sorted.sort_by(|a, b| b.value.partial_cmp(&a.value).unwrap());
-        sorted[..n].to_vec()
+        sorted.sort_by(|a, b| b.value.total_cmp(&a.value));
+        let limit = n.min(sorted.len());
+        sorted[..limit].to_vec()
     }
 
     /// Merge another pipeline's data, deduplicating by ID
