@@ -117,8 +117,11 @@ impl EventStore {
 
     /// Compute the percentage of events of a given type.
     pub fn type_ratio(&self, event_type: &str) -> f64 {
+        if self.events.is_empty() {
+            return 0.0;
+        }
         let count = self.find_by_type(event_type).len();
-        (count / self.events.len()) as f64 * 100.0
+        (count as f64 / self.events.len() as f64) * 100.0
     }
 
     pub fn len(&self) -> usize {

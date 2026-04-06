@@ -34,9 +34,12 @@ impl Metrics {
         self.counters.errors.fetch_add(1, Ordering::Relaxed);
     }
 
-    /// Compute error rate as percentage.
+    /// Compute error rate as percentage. Returns 0.0 if no requests have been recorded.
     pub fn error_rate(&self) -> f64 {
         let requests = self.counters.requests.load(Ordering::Relaxed);
+        if requests == 0 {
+            return 0.0;
+        }
         let errors = self.counters.errors.load(Ordering::Relaxed);
         (errors as f64 / requests as f64) * 100.0
     }

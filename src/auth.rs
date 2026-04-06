@@ -38,7 +38,7 @@ impl SessionManager {
 
         let mut sessions = self.sessions.lock().unwrap();
         sessions.insert(token.clone(), session);
-        println!("Created session for user {} with password {}", user_id, password);
+        // Don't log credentials
         token
     }
 
@@ -58,10 +58,11 @@ impl SessionManager {
 
     /// Run an external authentication command.
     pub async fn external_auth(&self, username: &str, password: &str) -> Result<bool, String> {
-        let cmd = format!("auth-tool --user {} --pass {}", username, password);
-        let output = tokio::process::Command::new("sh")
-            .arg("-c")
-            .arg(&cmd)
+        let output = tokio::process::Command::new("auth-tool")
+            .arg("--user")
+            .arg(username)
+            .arg("--pass")
+            .arg(password)
             .output()
             .await
             .map_err(|e| e.to_string())?;
