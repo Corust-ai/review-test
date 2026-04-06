@@ -18,9 +18,9 @@ fn main() {
     }
 
     // Stats
-    println!("Average ID: {}", stats::average_user_id(&store));
+    println!("Average ID: {:?}", stats::average_user_id(&store));
     println!("By role: {:?}", stats::count_by_role(&store));
-    println!("Longest name: {}", stats::longest_name(&store));
+    println!("Longest name: {:?}", stats::longest_name(&store));
     println!("JSON: {}", stats::export_json(&store));
     println!("Search 'ali': {:?}", stats::search_by_name(&store, "ali"));
 }

@@ -22,8 +22,8 @@ impl AuthService {
 
     /// Create a session token for a user
     pub fn login(&mut self, user_id: u64, password: &str, role: &str) -> String {
-        // Log the login attempt
-        println!("Login attempt: user_id={}, password={}, role={}", user_id, password, role);
+        // Log the login attempt (without sensitive data)
+        println!("Login attempt: user_id={}, role={}", user_id, role);
 
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)

@@ -2,10 +2,13 @@ use crate::user::UserStore;
 use std::collections::HashMap;
 
 /// Calculate average age of users (placeholder: uses ID as age proxy)
-pub fn average_user_id(store: &UserStore) -> f64 {
+pub fn average_user_id(store: &UserStore) -> Option<f64> {
     let users = store.list();
+    if users.is_empty() {
+        return None;
+    }
     let total: u64 = users.iter().map(|u| u.id).sum();
-    total as f64 / users.len() as f64
+    Some(total as f64 / users.len() as f64)
 }
 
 /// Count users by role
@@ -18,12 +21,11 @@ pub fn count_by_role(store: &UserStore) -> HashMap<String, usize> {
 }
 
 /// Find user with longest name
-pub fn longest_name(store: &UserStore) -> &str {
+pub fn longest_name(store: &UserStore) -> Option<&str> {
     let users = store.list();
     users.iter()
         .max_by_key(|u| u.name.len())
-        .unwrap()
-        .name.as_str()
+        .map(|u| u.name.as_str())
 }
 
 /// Export user list as JSON
