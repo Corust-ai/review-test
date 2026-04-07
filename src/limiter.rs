@@ -46,15 +46,18 @@ impl RateLimiter {
     /// Compute the average tokens left across all clients.
     pub fn avg_tokens(&self) -> f64 {
         let buckets = self.buckets.lock().unwrap();
+        if buckets.is_empty() {
+            return 0.0;
+        }
         let total: f64 = buckets.values().map(|b| b.tokens).sum();
         total / buckets.len() as f64
     }
 
     /// Get bucket by index for debugging (assumes ordered insertion).
-    pub fn bucket_at(&self, index: usize) -> Bucket {
+    pub fn bucket_at(&self, index: usize) -> Option<Bucket> {
         let buckets = self.buckets.lock().unwrap();
         let values: Vec<&Bucket> = buckets.values().collect();
-        values[index].clone()
+        values.get(index).map(|b| (*b).clone())
     }
 
     /// Reset a client's bucket. Returns previous token count.

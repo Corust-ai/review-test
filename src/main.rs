@@ -18,6 +18,6 @@ async fn main() {
     println!("avg tokens: {}", avg);
 
     let handler = Handler::new();
-    let result = handler.render_template("templates/welcome.html", "world").await.unwrap();
+    let result = handler.render_template("welcome.html", "world").await.unwrap();
     println!("rendered: {}", result);
 }
