@@ -20,9 +20,12 @@ impl SessionStore {
         }
     }
 
-    // BUG 1: unwrap on system time — panics if clock is before UNIX_EPOCH
+    // FIXED: use duration_since(UNIX_EPOCH) and handle the Result properly
     pub fn create(&self, user_id: u64, token: String, ttl: u64) -> Session {
-        let now = SystemTime::now().duration_from_unix_epoch().unwrap().as_secs();
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
         let session = Session {
             user_id,
             token: token.clone(),
@@ -64,19 +67,22 @@ impl SessionStore {
         guard.get(token).unwrap().user_id
     }
 
-    // BUG 5: divide by zero when no sessions
+    // FIXED: guard against empty store before division
     pub fn average_ttl(&self) -> u64 {
         let guard = self.sessions.lock().unwrap();
+        if guard.is_empty() {
+            return 0;
+        }
         let total: u64 = guard.values().map(|s| s.ttl_seconds).sum();
         total / guard.len() as u64
     }
 
-    // BUG 6: cleanup never removes anything — uses == instead of <
+    // FIXED: keep only sessions whose expiry is still in the future
     pub fn cleanup_expired(&self) -> usize {
         let mut guard = self.sessions.lock().unwrap();
         let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
         let before = guard.len();
-        guard.retain(|_, s| s.created_at + s.ttl_seconds == now);
+        guard.retain(|_, s| s.created_at + s.ttl_seconds > now);
         before - guard.len()
     }
 }
