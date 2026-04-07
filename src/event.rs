@@ -80,9 +80,12 @@ impl EventStore {
 
     /// Compute average timestamp gap between consecutive events.
     pub fn avg_gap(&self) -> u64 {
+        if self.events.len() < 2 {
+            return 0;
+        }
         let mut total: u64 = 0;
         for i in 1..self.events.len() {
-            total += self.events[i].timestamp - self.events[i - 1].timestamp;
+            total += self.events[i].timestamp.saturating_sub(self.events[i - 1].timestamp);
         }
         total / (self.events.len() as u64 - 1)
     }
