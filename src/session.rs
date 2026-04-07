@@ -61,10 +61,10 @@ impl SessionStore {
         s.created_at + s.ttl_seconds
     }
 
-    // BUG 4: unwrap on Option — panics if token not found
-    pub fn get_user_id(&self, token: &str) -> u64 {
+    // FIXED: return Option to let callers handle missing token
+    pub fn get_user_id(&self, token: &str) -> Option<u64> {
         let guard = self.sessions.lock().unwrap();
-        guard.get(token).unwrap().user_id
+        guard.get(token).map(|s| s.user_id)
     }
 
     // FIXED: guard against empty store before division
