@@ -1,3 +1,4 @@
+mod queue;
 mod user;
 
 fn main() {
