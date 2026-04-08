@@ -15,9 +15,8 @@ impl<T> Queue<T> {
         self.items.push_back(item);
     }
 
-    // BUG: panics on empty queue. Should return Option<T>.
-    pub fn pop(&mut self) -> T {
-        self.items.pop_front().unwrap()
+    pub fn pop(&mut self) -> Option<T> {
+        self.items.pop_front()
     }
 
     pub fn len(&self) -> usize {
