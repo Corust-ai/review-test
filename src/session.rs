@@ -82,7 +82,7 @@ impl SessionStore {
         let mut guard = self.sessions.lock().unwrap();
         let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
         let before = guard.len();
-        guard.retain(|_, s| s.created_at + s.ttl_seconds > now);
+        guard.retain(|_, s| s.created_at.saturating_add(s.ttl_seconds) > now);
         before - guard.len()
     }
 }
