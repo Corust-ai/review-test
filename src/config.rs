@@ -22,6 +22,9 @@ impl Config {
 
     // BUG: divide by zero when no settings
     pub fn average_value_length(&self) -> usize {
+        if self.settings.is_empty() {
+            return 0;
+        }
         let total: usize = self.settings.values().map(|v| v.len()).sum();
         total / self.settings.len()
     }
