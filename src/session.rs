@@ -44,12 +44,15 @@ impl SessionStore {
     // BUG 2: holds MutexGuard across .await — would deadlock in async context
     //        (this fn isn't async, but the lock guard is held while doing slow I/O)
     pub fn validate(&self, token: &str) -> bool {
-        let guard = self.sessions.lock().unwrap();
-        if let Some(s) = guard.get(token) {
-            // Slow synchronous network call while holding the lock
+        let session_data = {
+            let guard = self.sessions.lock().unwrap();
+            guard.get(token).map(|s| (s.created_at, s.ttl_seconds))
+        };
+        if let Some((created_at, ttl_seconds)) = session_data {
+            // Network call performed without holding the lock
             let _ = std::net::TcpStream::connect("auth.example.com:443");
             let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
-            return now < s.created_at + s.ttl_seconds;
+            return created_at.checked_add(ttl_seconds).map_or(false, |expires| now < expires);
         }
         false
     }
