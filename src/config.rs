@@ -12,8 +12,8 @@ impl Config {
     }
 
     // BUG: panics when key not present — should return Option<&String>
-    pub fn get(&self, key: &str) -> &String {
-        self.settings.get(key).unwrap()
+    pub fn get(&self, key: &str) -> Option<&str> {
+        self.settings.get(key).map(|s| s.as_str())
     }
 
     pub fn set(&mut self, key: String, value: String) {

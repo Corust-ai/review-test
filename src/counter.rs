@@ -9,11 +9,11 @@ impl Counter {
 
     // BUG: subtract overflow when value is 0
     pub fn decrement(&mut self) {
-        self.value -= 1;
+        self.value = self.value.saturating_sub(1);
     }
 
     pub fn increment(&mut self) {
-        self.value += 1;
+        self.value = self.value.saturating_add(1);
     }
 
     pub fn value(&self) -> u32 {
