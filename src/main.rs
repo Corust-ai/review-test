@@ -1,3 +1,4 @@
+mod inventory;
 mod user;
 
 fn main() {
