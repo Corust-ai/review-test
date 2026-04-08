@@ -14,8 +14,8 @@ impl<K: std::hash::Hash + Eq + Clone, V: Clone> Cache<K, V> {
     }
 
     // BUG A: panics on empty cache
-    pub fn get(&self, key: &K) -> &V {
-        self.map.get(key).unwrap()
+    pub fn get(&self, key: &K) -> Option<&V> {
+        self.map.get(key)
     }
 
     pub fn insert(&mut self, key: K, value: V) {
