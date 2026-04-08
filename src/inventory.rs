@@ -35,8 +35,10 @@ impl Inventory {
     }
 
     // BUG 3: integer overflow on price * quantity for large values
-    pub fn total_value(&self) -> u64 {
-        self.items.values().map(|i| i.price_cents * i.quantity as u64).sum()
+    pub fn total_value(&self) -> Option<u64> {
+        self.items.values().try_fold(0u64, |acc, i| {
+            i.price_cents.checked_mul(i.quantity as u64)?.checked_add(acc)
+        })
     }
 
     // BUG 4: divide by zero when inventory is empty
