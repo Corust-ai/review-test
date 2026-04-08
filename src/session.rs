@@ -58,10 +58,10 @@ impl SessionStore {
     }
 
     // BUG 3: integer overflow on TTL math — created_at + ttl_seconds may wrap
-    pub fn expires_at(&self, token: &str) -> u64 {
+    pub fn expires_at(&self, token: &str) -> Option<u64> {
         let guard = self.sessions.lock().unwrap();
-        let s = guard.get(token).unwrap();
-        s.created_at + s.ttl_seconds
+        let s = guard.get(token)?;
+        s.created_at.checked_add(s.ttl_seconds)
     }
 
     // FIXED: return Option to let callers handle missing token
