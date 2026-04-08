@@ -23,8 +23,11 @@ impl<K: std::hash::Hash + Eq + Clone, V: Clone> Cache<K, V> {
     }
 
     // BUG B: divide by zero when capacity is 0 (Cache::new(0))
-    pub fn fill_ratio(&self) -> usize {
-        self.map.len() / self.capacity
+    pub fn fill_ratio(&self) -> f64 {
+        if self.capacity == 0 {
+            return 0.0;
+        }
+        self.map.len() as f64 / self.capacity as f64
     }
 
     pub fn len(&self) -> usize {
