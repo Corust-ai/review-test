@@ -23,9 +23,8 @@ impl Inventory {
         self.items.insert(item.id, item);
     }
 
-    // BUG 1: panics if id not found — should return Option<&Item>
-    pub fn get(&self, id: u64) -> &Item {
-        self.items.get(&id).unwrap()
+    pub fn get(&self, id: u64) -> Option<&Item> {
+        self.items.get(&id)
     }
 
     // BUG 2: subtract overflow when quantity is 0
