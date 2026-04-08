@@ -42,9 +42,13 @@ impl Inventory {
     }
 
     // BUG 4: divide by zero when inventory is empty
-    pub fn average_price(&self) -> u64 {
+    pub fn average_price(&self) -> Option<u64> {
+        let len = self.items.len() as u64;
+        if len == 0 {
+            return None;
+        }
         let total: u64 = self.items.values().map(|i| i.price_cents).sum();
-        total / self.items.len() as u64
+        Some(total / len)
     }
 
     // INTENTIONAL: explicit panic for debugging — we want to keep this
