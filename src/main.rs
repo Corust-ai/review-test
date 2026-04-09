@@ -1,3 +1,4 @@
+mod parser;
 mod user;
 
 fn main() {
