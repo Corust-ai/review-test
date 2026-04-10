@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 pub fn parse_csv(input: &str) -> Vec<HashMap<String, String>> {
     let lines: Vec<&str> = input.lines().collect();
-    let headers: Vec<&str> = lines[0].split(',').collect();
+    let headers: Vec<&str> = match lines.first() {
+        Some(first_line) => first_line.split(',').collect(),
+        None => return Vec::new(),
+    };
     let mut results = Vec::new();
     for line in &lines[1..] {
         let values: Vec<&str> = line.split(',').collect();
