@@ -18,8 +18,8 @@ pub fn parse_csv(input: &str) -> Vec<HashMap<String, String>> {
     results
 }
 
-pub fn parse_int_unchecked(s: &str) -> i64 {
-    s.trim().parse().unwrap()
+pub fn parse_int_unchecked(s: &str) -> Result<i64, std::num::ParseIntError> {
+    s.trim().parse()
 }
 
 pub fn get_env_or_panic(key: &str) -> String {
