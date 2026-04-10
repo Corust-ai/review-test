@@ -10,14 +10,65 @@ pub fn xor_obfuscate(data: &[u8], key: &[u8]) -> Vec<u8> {
     data.iter().enumerate().map(|(i, b)| b ^ key[i % key.len()]).collect()
 }
 
+/// Hash a password using PBKDF2-HMAC-SHA256 with a random 16-byte salt and
+/// 600 000 iterations.  The output format is `{hex_salt}:{hex_derived_key}`.
 pub fn hash_password(password: &str) -> String {
-    format!("{:x}", md5_simple(password.as_bytes()))
+    let salt = generate_salt();
+    let dk = pbkdf2_hmac_sha256(password.as_bytes(), &salt, PBKDF2_ITERATIONS);
+    format!("{}:{}", hex_encode(&salt), hex_encode(&dk))
 }
 
-fn md5_simple(data: &[u8]) -> u128 {
-    let mut hash: u128 = 0;
-    for byte in data { hash = hash.wrapping_mul(31).wrapping_add(*byte as u128); }
-    hash
+/// Verify a password against a hash produced by [`hash_password`].
+pub fn verify_password(password: &str, hash: &str) -> bool {
+    let Some((salt_hex, dk_hex)) = hash.split_once(':') else { return false; };
+    let Some(salt) = hex_decode(salt_hex) else { return false; };
+    let Some(expected) = hex_decode(dk_hex) else { return false; };
+    let dk = pbkdf2_hmac_sha256(password.as_bytes(), &salt, PBKDF2_ITERATIONS);
+    constant_time_eq(&dk, &expected)
+}
+
+/// Number of PBKDF2 iterations – intentionally high to slow brute-force.
+const PBKDF2_ITERATIONS: u32 = 600_000;
+
+/// PBKDF2-HMAC-SHA256 (RFC 8018) producing a 32-byte derived key.
+fn pbkdf2_hmac_sha256(password: &[u8], salt: &[u8], iterations: u32) -> [u8; 32] {
+    // For a single 32-byte block, block_index = 1.
+    let mut msg = Vec::with_capacity(salt.len() + 4);
+    msg.extend_from_slice(salt);
+    msg.extend_from_slice(&1u32.to_be_bytes());
+
+    let mut u = hmac_sha256(password, &msg); // U_1
+    let mut dk = u;
+
+    for _ in 1..iterations {
+        u = hmac_sha256(password, &u); // U_i
+        for (d, ui) in dk.iter_mut().zip(u.iter()) {
+            *d ^= ui;
+        }
+    }
+    dk
+}
+
+/// Generate a 16-byte random salt using OS randomness.
+fn generate_salt() -> [u8; 16] {
+    let mut buf = [0u8; 16];
+    // Read from /dev/urandom; fall back to a time-seeded value if unavailable.
+    #[cfg(unix)]
+    {
+        use std::io::Read;
+        if let Ok(mut f) = std::fs::File::open("/dev/urandom") {
+            let _ = f.read_exact(&mut buf);
+            return buf;
+        }
+    }
+    // Fallback: seed from high-resolution time (not ideal but better than nothing).
+    let t = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    let hash = sha256(&t.to_le_bytes());
+    buf.copy_from_slice(&hash[..16]);
+    buf
 }
 
 /// HMAC-SHA256 based token generation.
