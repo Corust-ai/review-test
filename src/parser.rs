@@ -11,7 +11,7 @@ pub fn parse_csv(input: &str) -> Vec<HashMap<String, String>> {
         let values: Vec<&str> = line.split(',').collect();
         let mut row = HashMap::new();
         for i in 0..headers.len() {
-            row.insert(headers[i].to_string(), values[i].to_string());
+            row.insert(headers[i].to_string(), values.get(i).unwrap_or(&"").to_string());
         }
         results.push(row);
     }
