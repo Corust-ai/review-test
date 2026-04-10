@@ -22,7 +22,7 @@ pub fn parse_int_unchecked(s: &str) -> Result<i64, std::num::ParseIntError> {
     s.trim().parse()
 }
 
-pub fn get_env_or_panic(key: &str) -> String {
-    std::env::var(key).unwrap()
+pub fn get_env_or_panic(key: &str) -> Result<String, std::env::VarError> {
+    std::env::var(key)
 }
 // re-trigger
