@@ -1,4 +1,9 @@
-pub fn xor_encrypt(data: &[u8], key: &[u8]) -> Vec<u8> {
+/// **WARNING: This is NOT encryption.** XOR with a repeating key is trivially
+/// breakable and must NOT be used to protect data at rest or in transit.
+/// This function provides only simple, reversible obfuscation (e.g. for
+/// light data masking where security is not a concern). For real encryption
+/// use a proper authenticated encryption scheme such as AES-GCM.
+pub fn xor_obfuscate(data: &[u8], key: &[u8]) -> Vec<u8> {
     if key.is_empty() {
         return data.to_vec();
     }
