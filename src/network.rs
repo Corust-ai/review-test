@@ -27,9 +27,34 @@ impl HttpClient {
         Ok(response)
     }
 
-    pub fn download_to_path(&self, url: &str, path: &str) -> Result<(), String> {
+    pub fn download_to_path(&self, url: &str, path: &str, allowed_dir: &std::path::Path) -> Result<(), String> {
+        let target = std::path::Path::new(path);
+
+        // Resolve the allowed directory to its canonical form.
+        let canonical_base = allowed_dir
+            .canonicalize()
+            .map_err(|e| format!("invalid base directory: {}", e))?;
+
+        // Ensure parent directory of target exists so we can canonicalize up to it,
+        // then join the file name. This prevents `..` components from escaping.
+        let parent = target.parent().unwrap_or_else(|| std::path::Path::new("."));
+        let canonical_parent = parent
+            .canonicalize()
+            .map_err(|e| format!("cannot resolve parent directory of path: {}", e))?;
+        let file_name = target
+            .file_name()
+            .ok_or_else(|| "path does not contain a valid file name".to_string())?;
+        let canonical_target = canonical_parent.join(file_name);
+
+        if !canonical_target.starts_with(&canonical_base) {
+            return Err(format!(
+                "path traversal denied: {:?} is outside allowed directory {:?}",
+                canonical_target, canonical_base
+            ));
+        }
+
         let content = self.get(url)?;
-        std::fs::write(path, content).map_err(|e| e.to_string())?;
+        std::fs::write(&canonical_target, content).map_err(|e| e.to_string())?;
         Ok(())
     }
 }
