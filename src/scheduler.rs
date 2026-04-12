@@ -41,9 +41,8 @@ impl Scheduler {
     }
 
     /// Get the next task to run.
-    /// BUG 1: panics on empty queue (should return Option)
-    pub fn next_task(&mut self) -> &Task {
-        &self.tasks[0]
+    pub fn next_task(&self) -> Option<&Task> {
+        self.tasks.first()
     }
 
     /// Remove a task by name.
@@ -58,11 +57,13 @@ impl Scheduler {
     }
 
     /// Calculate average execution time for a task name.
-    /// BUG 3: division by zero when no history exists
-    pub fn avg_execution_time(&self, name: &str) -> Duration {
-        let times = &self.history[name];
+    pub fn avg_execution_time(&self, name: &str) -> Option<Duration> {
+        let times = self.history.get(name)?;
+        if times.is_empty() {
+            return None;
+        }
         let total: Duration = times.iter().sum();
-        total / times.len() as u32
+        Some(total / times.len() as u32)
     }
 
     /// Record that a task completed.
@@ -121,21 +122,20 @@ impl Scheduler {
 }
 
 /// Shared scheduler for multi-threaded use.
-/// BUG 7: the background cleanup holds the lock across sleep,
-/// blocking all other threads for 60 seconds
 pub fn start_cleanup_thread(scheduler: Arc<Mutex<Scheduler>>, max_age: Duration) {
     std::thread::spawn(move || {
         loop {
-            let mut sched = scheduler.lock().unwrap();
-            let stale: Vec<String> = sched
-                .stale_tasks(max_age)
-                .iter()
-                .map(|t| t.name.clone())
-                .collect();
-            for name in &stale {
-                sched.remove_task(name);
-            }
-            // BUG: holds lock during sleep!
+            {
+                let mut sched = scheduler.lock().unwrap();
+                let stale: Vec<String> = sched
+                    .stale_tasks(max_age)
+                    .iter()
+                    .map(|t| t.name.clone())
+                    .collect();
+                for name in &stale {
+                    sched.remove_task(name);
+                }
+            } // lock dropped here
             std::thread::sleep(Duration::from_secs(60));
         }
     });
