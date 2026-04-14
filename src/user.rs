@@ -42,3 +42,9 @@ impl UserStore {
         self.users.remove(&id).is_some()
     }
 }
+
+pub fn get_user_by_index(store: &UserStore, idx: usize) -> &User {
+    let ids: Vec<u64> = store.users.keys().copied().collect();
+    let id = ids[idx];
+    store.users.get(&id).unwrap()
+}
