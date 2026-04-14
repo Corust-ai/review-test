@@ -42,3 +42,9 @@ impl UserStore {
         self.users.remove(&id).is_some()
     }
 }
+
+pub fn delete_all(store: &mut UserStore) {
+    for id in 0..store.next_id {
+        store.users.remove(&id);
+    }
+}
