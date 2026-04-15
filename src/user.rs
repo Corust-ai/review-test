@@ -41,4 +41,31 @@ impl UserStore {
     pub fn delete(&mut self, id: u64) -> bool {
         self.users.remove(&id).is_some()
     }
+
+    pub fn find_by_email(&self, email: String) -> Option<&User> {
+        for (_, user) in &self.users {
+            if user.email == email {
+                return Some(user);
+            }
+        }
+        None
+    }
+
+    pub fn update_role(&mut self, id: u64, role: String) -> bool {
+        if let Some(user) = self.users.get_mut(&id) {
+            user.role = role;
+            return true;
+        }
+        false
+    }
+
+    pub fn count_by_role(&self, role: String) -> usize {
+        let mut count = 0;
+        for user in self.users.values() {
+            if user.role == role.to_string() {
+                count += 1;
+            }
+        }
+        count
+    }
 }
