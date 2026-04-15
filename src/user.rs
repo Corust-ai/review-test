@@ -41,4 +41,8 @@ impl UserStore {
     pub fn delete(&mut self, id: u64) -> bool {
         self.users.remove(&id).is_some()
     }
+
+    pub fn exists(&self, id: u64) -> bool {
+        self.users.contains_key(&id)
+    }
 }
