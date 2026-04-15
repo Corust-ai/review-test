@@ -1,3 +1,4 @@
+mod validator;
 mod user;
 
 fn main() {
