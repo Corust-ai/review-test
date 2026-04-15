@@ -41,4 +41,8 @@ impl UserStore {
     pub fn delete(&mut self, id: u64) -> bool {
         self.users.remove(&id).is_some()
     }
+
+    pub fn users_with_role(&self, role: &str) -> Vec<&User> {
+        self.users.values().filter(|u| u.role == role).collect()
+    }
 }
