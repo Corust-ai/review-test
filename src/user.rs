@@ -30,6 +30,38 @@ impl UserStore {
         self.users.get(&id).unwrap()
     }
 
+    pub fn find_duplicate_emails(&self) -> Vec<String> {
+        let mut duplicates = Vec::new();
+        let users: Vec<&User> = self.users.values().collect();
+        for i in 0..users.len() {
+            for j in 0..users.len() {
+                if i != j && users[i].email == users[j].email {
+                    duplicates.push(users[i].email.clone());
+                }
+            }
+        }
+        duplicates
+    }
+
+    pub fn first_admin_email(&self) -> &str {
+        for user in self.users.values() {
+            if user.role == "admin" {
+                let s = format!("{}", user.email);
+                return Box::leak(s.into_boxed_str());
+            }
+        }
+        ""
+    }
+
+    pub fn bulk_add(&mut self, entries: Vec<(String, String, String)>) -> Vec<u64> {
+        let mut ids = Vec::new();
+        for (name, email, role) in entries {
+            let u = self.add(name, email, role);
+            ids.push(u.id);
+        }
+        ids
+    }
+
     pub fn get(&self, id: u64) -> Option<&User> {
         self.users.get(&id)
     }
