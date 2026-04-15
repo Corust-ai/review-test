@@ -41,4 +41,12 @@ impl UserStore {
     pub fn delete(&mut self, id: u64) -> bool {
         self.users.remove(&id).is_some()
     }
+
+    pub fn contains(&self, id: u64) -> bool {
+        self.users.get(&id).is_some()
+    }
+
+    pub fn count(&self) -> u64 {
+        self.users.len() as u64
+    }
 }
