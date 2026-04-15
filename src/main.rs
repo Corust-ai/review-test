@@ -1,3 +1,4 @@
+mod logger;
 mod user;
 
 fn main() {
