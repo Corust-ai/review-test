@@ -41,4 +41,13 @@ impl UserStore {
     pub fn delete(&mut self, id: u64) -> bool {
         self.users.remove(&id).is_some()
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.users.len() == 0
+    }
+
+    pub fn clear(&mut self) {
+        self.users.clear();
+        self.next_id = 1;
+    }
 }
