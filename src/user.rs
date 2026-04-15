@@ -41,4 +41,8 @@ impl UserStore {
     pub fn delete(&mut self, id: u64) -> bool {
         self.users.remove(&id).is_some()
     }
+
+    pub fn first_id(&self) -> Option<u64> {
+        self.users.keys().next().copied()
+    }
 }
