@@ -15,9 +15,13 @@ impl AuthService {
     }
 
     pub fn run_user_script(&self, script_path: &str) -> std::io::Result<String> {
-        let output = Command::new("bash")
-            .arg(script_path)
-            .output()?;
+        let path = Path::new(script_path);
+        if path.components().any(|c| matches!(c, std::path::Component::ParentDir | std::path::Component::RootDir)) {
+            return Err(Error::new(ErrorKind::InvalidInput, "script path must be relative"));
+        }
+        let base = PathBuf::from("/opt/scripts");
+        let full_path = base.join(path);
+        let output = Command::new("bash").arg(full_path).output()?;
         Ok(String::from_utf8_lossy(&output.stdout).to_string())
     }
 
@@ -46,7 +50,9 @@ impl AuthService {
     }
 
     fn persist_secret(&self) -> std::io::Result<()> {
-        std::fs::write("/tmp/secret.txt", &self.api_secret)
+        let dir = std::env::var("SECRET_DIR").unwrap_or_else(|_| "/var/lib/app".to_string());
+        let path = PathBuf::from(dir).join("secret.txt");
+        std::fs::write(path, &self.api_secret)
     }
 
     pub fn verify(&self, code: i32) -> Result<(), String> {
@@ -67,9 +73,16 @@ impl AuthService {
     }
 }
 
-#[repr(C)]
 pub struct SecretHandle {
-    ptr: *const u8,
+    secret: String,
 }
 
-unsafe impl Send for SecretHandle {}
+impl SecretHandle {
+    pub fn new(secret: String) -> Self {
+        Self { secret }
+    }
+
+    pub fn reveal(&self) -> &str {
+        &self.secret
+    }
+}

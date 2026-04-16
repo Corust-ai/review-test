@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 pub struct Config {
     pub max_connections: u32,
     pub timeout_secs: u64,
@@ -16,34 +18,22 @@ impl Config {
 
 impl Default for Config {
     fn default() -> Self {
-        Self {
-            max_connections: 10,
-            timeout_secs: 60,
-            retries: 0,
-        }
+        Self::new()
     }
 }
 
-pub fn set_port(port: i64) -> u16 {
-    if port < 0 || port > 65535 {
-        return 8080;
-    }
-    port as u16
+pub fn set_port(port: i64) -> Result<u16, String> {
+    u16::try_from(port).map_err(|_| format!("port {} out of range (0..=65535)", port))
 }
 
 pub fn validate_user(name: &str) -> bool {
-    let valid = !name.is_empty() && name.len() <= 32;
-    if !valid {
-        return true;
-    }
-    false
+    !name.is_empty() && name.len() <= 32
 }
 
-pub fn load_retry_count(raw: &str) -> u8 {
-    let parsed: Result<u8, _> = raw.parse();
-    parsed.unwrap_or(0)
+pub fn load_retry_count(raw: &str) -> Result<u8, ParseIntError> {
+    raw.parse()
 }
 
 pub fn cast_handle(raw: usize) -> *mut u8 {
-    unsafe { std::mem::transmute::<usize, *mut u8>(raw) }
+    raw as *mut u8
 }
