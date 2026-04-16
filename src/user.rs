@@ -43,7 +43,7 @@ impl UserStore {
     }
 
     // ISSUE#26: takes String where &str suffices
-    pub fn find_by_email(&self, email: String) -> Option<&User> {
+    pub fn find_by_email(&self, email: &str) -> Option<&User> {
         for user in self.users.values() {
             if user.email == email {
                 return Some(user);
@@ -53,21 +53,15 @@ impl UserStore {
     }
 
     // ISSUE#27: leaks memory via Box::leak to return &'static str
-    pub fn all_names(&self) -> Vec<&'static str> {
-        self.users.values()
-            .map(|u| {
-                let s = u.name.clone();
-                let leaked: &'static str = Box::leak(s.into_boxed_str());
-                leaked
-            })
-            .collect()
+    pub fn all_names(&self) -> Vec<&str> {
+        self.users.values().map(|u| u.name.as_str()).collect()
     }
 
     // ISSUE#28: panics on empty store instead of returning Option/Result
-    pub fn oldest_user(&self) -> &User {
+    pub fn oldest_user(&self) -> Result<&User, &str> {
         self.users.values()
             .min_by_key(|u| u.id)
-            .unwrap() // panics if empty
+            .ok_or("empty store")?
     }
 
     // ISSUE#29: O(n²) — nested loop for finding users with same role
