@@ -3,9 +3,9 @@ use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct Cache {
-    data: HashMap<String, (String, u64)>, // key → (value, expires_at)
-    hits: i32,   // ISSUE#6: should be usize, i32 truncates on large caches
-    misses: i32, // ISSUE#6b: same
+    data: HashMap<String, (String, u64)>,
+    hits: usize,   // FIXED#6: was i32
+    misses: usize, // FIXED#6b
 }
 
 impl Cache {
@@ -17,23 +17,22 @@ impl Cache {
         }
     }
 
-    // ISSUE#1: key: String should be &str — only reads, never stores the key param itself
-    pub fn get(&mut self, key: String) -> Option<String> {
+    // FIXED#1: &str instead of String
+    pub fn get(&mut self, key: &str) -> Option<&str> {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap() // ISSUE#2: unwrap on system clock (can fail on some platforms)
-            .as_secs();
+            .map(|d| d.as_secs())
+            .unwrap_or(0); // FIXED#2: graceful fallback instead of unwrap
 
-        // ISSUE#3: unnecessary .clone() — could return reference
-        match self.data.get(&key) {
+        match self.data.get(key) {
             Some((val, expires)) => {
-                // ISSUE#5: off-by-one: should be >= (expired AT the exact second)
-                if now > *expires {
+                // FIXED#5: >= instead of >
+                if now >= *expires {
                     self.misses += 1;
                     None
                 } else {
                     self.hits += 1;
-                    Some(val.clone()) // ISSUE#3
+                    Some(val.as_str()) // FIXED#3: return reference, no clone
                 }
             }
             None => {
@@ -43,47 +42,39 @@ impl Cache {
         }
     }
 
-    // ISSUE#1b: key and value by String, should be &str
-    pub fn set(&mut self, key: String, value: String, ttl_secs: u64) {
+    // FIXED#1b: &str params
+    pub fn set(&mut self, key: &str, value: &str, ttl_secs: u64) {
         let expires = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs()
+            .map(|d| d.as_secs())
+            .unwrap_or(0)
             + ttl_secs;
-        self.data.insert(key, (value, expires));
+        self.data.insert(key.to_owned(), (value.to_owned(), expires));
     }
 
-    // ISSUE#7: manual loop where .retain() would be idiomatic
+    // FIXED#7: use retain() instead of manual loop
     pub fn evict_expired(&mut self) {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
-        let mut to_remove = Vec::new();
-        for (k, (_, expires)) in &self.data {
-            if now > *expires {
-                to_remove.push(k.clone());
-            }
-        }
-        for k in to_remove {
-            self.data.remove(&k);
-        }
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        self.data.retain(|_, (_, expires)| now < *expires);
     }
 
-    // ISSUE#4: should use self.data.clear() instead of reassigning
+    // FIXED#4: use .clear()
     pub fn clear(&mut self) {
-        self.data = HashMap::new();
+        self.data.clear();
         self.hits = 0;
         self.misses = 0;
     }
 
-    // ISSUE#8: silent error swallowing with let _ = ...
-    pub fn dump_to_file(&self, path: &str) {
+    // FIXED#8: propagate error instead of silently swallowing
+    pub fn dump_to_file(&self, path: &str) -> std::io::Result<()> {
         let mut lines = Vec::new();
         for (k, (v, _)) in &self.data {
             lines.push(format!("{}={}", k, v));
         }
-        let _ = fs::write(path, lines.join("\n"));
+        fs::write(path, lines.join("\n"))
     }
 
     pub fn hit_rate(&self) -> f64 {
