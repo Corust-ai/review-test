@@ -41,4 +41,23 @@ impl UserStore {
     pub fn delete(&mut self, id: u64) -> bool {
         self.users.remove(&id).is_some()
     }
+
+    pub fn find_by_name(&self, name: String) -> Option<&User> {
+        for user in self.users.values() {
+            if user.name == name {
+                return Some(user);
+            }
+        }
+        None
+    }
+
+    pub fn admin_count(&self) -> usize {
+        let mut count = 0;
+        for user in self.users.values() {
+            if user.role == "admin".to_string() {
+                count += 1;
+            }
+        }
+        count
+    }
 }
