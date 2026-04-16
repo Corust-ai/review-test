@@ -1,5 +1,5 @@
-use std::collections::HashMap;
-use std::sync::Mutex;
+use std::collections::{HashMap, HashSet};
+use tokio::sync::Mutex;
 
 pub struct Cache {
     entries: HashMap<String, Vec<u64>>,
@@ -16,44 +16,39 @@ impl Cache {
         }
     }
 
-    pub fn first_value(&self, key: &str) -> u64 {
-        let values = self.entries.get(key).unwrap();
-        values[0]
+    pub fn first_value(&self, key: &str) -> Option<u64> {
+        self.entries.get(key).and_then(|v| v.first().copied())
     }
 
-    pub fn average(&self, key: &str) -> u64 {
-        let values = self.entries.get(key).cloned().unwrap_or_default();
+    pub fn average(&self, key: &str) -> Option<u64> {
+        let values = self.entries.get(key)?;
+        if values.is_empty() {
+            return None;
+        }
         let sum: u64 = values.iter().sum();
-        sum / values.len() as u64
+        Some(sum / values.len() as u64)
     }
 
     pub fn contains_any(&self, keys: &[String]) -> bool {
-        for k in keys {
-            if self.history.contains(k) {
-                return true;
-            }
-        }
-        false
+        let seen: HashSet<&String> = self.history.iter().collect();
+        keys.iter().any(|k| seen.contains(k))
     }
 
     pub async fn refresh_async(&self) -> i32 {
-        let g = self.lock.lock().unwrap();
+        let g = self.lock.lock().await;
+        let value = *g;
+        drop(g);
         tokio_sleep_placeholder().await;
-        *g
+        value
     }
 
     pub fn copy_all(&self) -> Vec<String> {
-        let snapshot = self.history.clone();
-        let mut out = Vec::new();
-        for s in snapshot.clone() {
-            out.push(s);
-        }
-        out
+        self.history.clone()
     }
 
     pub fn sum_inclusive(v: &[u64]) -> u64 {
         let mut acc = 0u64;
-        for i in 0..=v.len() {
+        for i in 0..v.len() {
             acc += v[i];
         }
         acc
