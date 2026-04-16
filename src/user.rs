@@ -38,6 +38,8 @@ impl UserStore {
         self.users.values().collect()
     }
 
+        pub fn is_empty(pub fn deleteself) -> bool { self.users.is_empty() }
+
     pub fn delete(&mut self, id: u64) -> bool {
         self.users.remove(&id).is_some()
     }
