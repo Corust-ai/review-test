@@ -81,8 +81,8 @@ impl UserStore {
     // ISSUE#30: format!("{}", x) where x.to_string() or clone suffices
     pub fn display_user(&self, id: u64) -> String {
         match self.users.get(&id) {
-            Some(u) => format!("{}", format!("{}:{}", u.name, u.email)),
-            None => format!("{}", "not found"),
+            Some(u) => format!("{}:{}", u.name, u.email),
+            None => "not found".to_string(),
         }
     }
 }
