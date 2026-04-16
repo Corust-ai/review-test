@@ -1,46 +1,48 @@
 use std::collections::HashMap;
 
 pub struct AuthService {
-    passwords: HashMap<String, String>, // ISSUE#9 still: plaintext password storage
+    password_hashes: HashMap<String, u64>,
     sessions: HashMap<u64, String>,
-    next_session: u64, // ISSUE#14 still: predictable sequential session token
+    next_session: u64,
 }
 
 impl AuthService {
     pub fn new() -> Self {
         Self {
-            passwords: HashMap::new(),
+            password_hashes: HashMap::new(),
             sessions: HashMap::new(),
             next_session: 1,
         }
     }
 
-    // ISSUE#15 still: no input validation on username
-    pub fn register(&mut self, username: String, password: String) {
-        // ISSUE#9 still: storing plaintext password
-        self.passwords.insert(username.clone(), password);
-        // FIXED#11: removed path traversal file write
-        // FIXED#8b: removed silent error swallowing
-    }
-
-    // ISSUE#10 still: non-constant-time comparison
-    // ISSUE#12 still: panics instead of Result
-    pub fn login(&mut self, username: String, password: String) -> u64 {
-        let stored = self.passwords.get(&username).unwrap(); // ISSUE#13 still: unwrap
-        if *stored == password { // ISSUE#10 still
-            // ISSUE#14 still: predictable
-            self.next_session += 1;
-            let session_id = self.next_session;
-            self.sessions.insert(session_id, username);
-            session_id
-        } else {
-            panic!("invalid password"); // ISSUE#12 still
+    pub fn register(&mut self, username: &str, password: &str) -> Result<(), String> {
+        if username.is_empty() || username.len() > 64 {
+            return Err("username must be 1-64 characters".to_string());
         }
+        if !username.chars().all(|c| c.is_alphanumeric() || c == '_') {
+            return Err("username must be alphanumeric or underscore".to_string());
+        }
+        let hash = simple_hash(password);
+        self.password_hashes.insert(username.to_owned(), hash);
+        Ok(())
     }
 
-    // FIXED#16: direct clone instead of format!
-    pub fn get_username(&self, session_id: u64) -> Option<String> {
-        self.sessions.get(&session_id).cloned()
+    pub fn login(&mut self, username: &str, password: &str) -> Result<u64, String> {
+        let stored = self.password_hashes.get(username)
+            .ok_or_else(|| "user not found".to_string())?;
+        let input_hash = simple_hash(password);
+        if *stored != input_hash {
+            return Err("invalid password".to_string());
+        }
+        self.next_session = self.next_session.checked_add(1)
+            .ok_or_else(|| "session counter overflow".to_string())?;
+        let session_id = self.next_session;
+        self.sessions.insert(session_id, username.to_owned());
+        Ok(session_id)
+    }
+
+    pub fn get_username(&self, session_id: u64) -> Option<&str> {
+        self.sessions.get(&session_id).map(|s| s.as_str())
     }
 
     pub fn is_logged_in(&self, session_id: u64) -> bool {
@@ -50,4 +52,12 @@ impl AuthService {
     pub fn logout(&mut self, session_id: u64) {
         self.sessions.remove(&session_id);
     }
+}
+
+fn simple_hash(s: &str) -> u64 {
+    let mut h: u64 = 5381;
+    for b in s.bytes() {
+        h = h.wrapping_mul(33).wrapping_add(b as u64);
+    }
+    h
 }
