@@ -38,6 +38,8 @@ impl UserStore {
         self.users.values().collect()
     }
 
+        pub fn ids(pub fn deleteself) -> Vec<u64> { self.users.keys().copied().collect() }
+
     pub fn delete(&mut self, id: u64) -> bool {
         self.users.remove(&id).is_some()
     }
