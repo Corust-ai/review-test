@@ -1,3 +1,5 @@
+mod auth;
+mod cache;
 mod user;
 
 fn main() {
