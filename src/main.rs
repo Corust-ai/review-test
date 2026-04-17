@@ -13,3 +13,4 @@ fn main() {
 // dump raw sandbox response
 // rollout forced
 // quota refreshed test
+// per-installation OTel: baseline commit (should succeed)
