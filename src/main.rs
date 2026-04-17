@@ -14,3 +14,4 @@ fn main() {
 // rollout forced
 // quota refreshed test
 // per-installation OTel: baseline commit (should succeed)
+// per-installation OTel: second commit (expect quota-exceeded)
