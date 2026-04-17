@@ -16,3 +16,4 @@ fn main() {
 // per-installation OTel: baseline commit (should succeed)
 // per-installation OTel: second commit (expect quota-exceeded)
 // structured events: baseline (expect review.started + review.completed + review.quota)
+// structured events: should-fail (expect review.failed + review.quota with error_class=quota)
