@@ -15,3 +15,4 @@ fn main() {
 // quota refreshed test
 // per-installation OTel: baseline commit (should succeed)
 // per-installation OTel: second commit (expect quota-exceeded)
+// structured events: baseline (expect review.started + review.completed + review.quota)
