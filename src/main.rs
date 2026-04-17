@@ -9,3 +9,4 @@ fn main() {
 // A/B test: logging key swapped
 // trace billing
 // final verify
+// verify v2 fix
