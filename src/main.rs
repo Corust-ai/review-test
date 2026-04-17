@@ -6,3 +6,4 @@ fn main() {
 }
 // trigger retry
 // retry 3
+// A/B test: logging key swapped
