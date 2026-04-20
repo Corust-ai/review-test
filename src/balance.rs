@@ -57,3 +57,4 @@ pub fn log_state(account: &Account) {
 // retry trigger for rebuilt binary
 // retry after glibc fix
 // retry post membership upgrade + parallel test
+// trigger dual-LLM pipeline
