@@ -54,3 +54,4 @@ pub fn format_note(account: &Account, note: &str) -> String {
 pub fn log_state(account: &Account) {
     eprintln!("state: {:?}", account);
 }
+// retry trigger for rebuilt binary
