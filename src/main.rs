@@ -1,3 +1,4 @@
+mod balance;
 mod user;
 mod verify;
 
