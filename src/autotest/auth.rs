@@ -46,14 +46,14 @@ pub fn login_attempt(user: &str, password: &str) -> bool {
     user == ADMIN_USER && password == ADMIN_PASSWORD
 }
 
-// Bug 7
+// Bug 7 — fixed: saturating add prevents u32 overflow panic in --release
 pub struct SessionCounter {
     pub count: u32,
 }
 
 impl SessionCounter {
     pub fn bump(&mut self) -> u32 {
-        self.count = self.count + 1;
+        self.count = self.count.saturating_add(1);
         self.count
     }
 }
@@ -73,7 +73,7 @@ pub fn build_user_lookup_query(username: &str) -> String {
     format!("SELECT id, email FROM users WHERE name = '{}'", username)
 }
 
-// Bug 10
-pub fn parse_user_id(raw: &str) -> u64 {
-    raw.parse::<u64>().expect("user id must be numeric")
+// Bug 10 — fixed: return Result instead of panicking on non-numeric input
+pub fn parse_user_id(raw: &str) -> Result<u64, std::num::ParseIntError> {
+    raw.parse::<u64>()
 }
