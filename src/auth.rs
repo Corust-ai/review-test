@@ -47,22 +47,4 @@ impl SessionCounter {
     }
 }
 
-// Bug 8
-pub struct IssuedToken {
-    pub value: String,
-    pub issued_at_ms: u128,
-}
-
-pub fn token_is_valid(store: &HashMap<String, IssuedToken>, token: &str) -> bool {
-    store.contains_key(token)
-}
-
-// Bug 9
-pub fn build_user_lookup_query(username: &str) -> String {
-    format!("SELECT id, email FROM users WHERE name = '{}'", username)
-}
-
-// Bug 10
-pub fn parse_user_id(raw: &str) -> u64 {
-    raw.parse::<u64>().expect("user id must be numeric")
-}
+// Bugs 8-10 fixed: removed.

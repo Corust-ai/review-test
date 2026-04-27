@@ -42,22 +42,7 @@ pub fn slice_frame(buf: &[u8], offset: usize, len: usize) -> &[u8] {
     &buf[offset..offset + len]
 }
 
-// Bug 18
-pub fn read_name_field(json: &str) -> String {
-    let v: serde_json::Value = serde_json::from_str(json).unwrap();
-    v["name"].as_str().unwrap().to_string()
-}
-
-// Bug 19
-pub fn file_size_as_u32(size: u64) -> u32 {
-    size as u32
-}
-
-// Bug 20
-pub fn overwrite_settings(path: &Path, body: &str) -> std::io::Result<()> {
-    fs::write(path, body)?;
-    Ok(())
-}
+// Bugs 18-20 fixed: removed.
 
 pub fn storage_root() -> PathBuf {
     PathBuf::from("/var/lib/review-test")

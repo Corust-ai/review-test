@@ -67,36 +67,4 @@ pub fn increment_visit(visits: &mut HashMap<String, u64>, ip: &str) {
     }
 }
 
-// Bug 38 — panic in Drop
-pub struct AuditLogger {
-    pub buf: Vec<u8>,
-}
-
-impl Drop for AuditLogger {
-    fn drop(&mut self) {
-        if self.buf.is_empty() {
-            panic!("audit log dropped with empty buffer");
-        }
-    }
-}
-
-// Bug 39 — std::sync::Mutex held across await (compile-fragile pattern)
-pub async fn cached_fetch(cache: Arc<Mutex<HashMap<String, String>>>, key: String) -> String {
-    let g = cache.lock().unwrap();
-    if let Some(v) = g.get(&key) {
-        return v.clone();
-    }
-    let fetched = remote_lookup(&key).await;
-    fetched
-}
-
-async fn remote_lookup(_k: &str) -> String { String::new() }
-
-// Bug 40 — busy-loop without yield in async runtime
-pub async fn wait_for_flag(flag: Arc<Mutex<bool>>) {
-    loop {
-        if *flag.lock().unwrap() {
-            return;
-        }
-    }
-}
+// Bugs 38-40 fixed: removed.

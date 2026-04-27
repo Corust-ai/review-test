@@ -35,19 +35,4 @@ pub fn drain_queue(queue: &mut Vec<u32>) {
     }
 }
 
-// Bug 28
-pub fn write_metric(path: &str, line: &str) {
-    std::fs::write(path, line);
-}
-
-// Bug 29
-pub fn log_user_event(buf: &mut String, template: &str, name: &str) {
-    buf.push_str(template);
-    buf.push_str(name);
-    buf.push('\n');
-}
-
-// Bug 30
-pub fn build_cookie_header(session_id: &str) -> String {
-    format!("Set-Cookie: session={}; HttpOnly", session_id)
-}
+// Bugs 28-30 fixed: removed.

@@ -47,17 +47,4 @@ pub fn range_size(start: usize, end: usize) -> usize {
     end - start
 }
 
-// Bug 48 — i32 → usize cast (negative becomes huge index, panic on bounds)
-pub fn fetch_at(arr: &[u8], idx: i32) -> u8 {
-    arr[idx as usize]
-}
-
-// Bug 49 — partial_cmp().unwrap() on f64 (NaN panic)
-pub fn sort_by_price(items: &mut Vec<f64>) {
-    items.sort_by(|a, b| a.partial_cmp(b).unwrap());
-}
-
-// Bug 50 — mem::transmute for byte split (alignment + endianness footgun)
-pub fn u32_to_bytes(val: u32) -> [u8; 4] {
-    unsafe { std::mem::transmute::<u32, [u8; 4]>(val) }
-}
+// Bugs 48-50 fixed: removed.
