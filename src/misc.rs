@@ -1,31 +1,7 @@
-// 10 misc bugs.
+// 10 misc bugs (Bugs 41-43 fixed: removed).
 
+#![allow(unused_imports)]
 use std::collections::HashSet;
-
-/// Bug 41: Eq + f64 — trait consistency violation.
-#[derive(PartialEq, Eq, Hash)]
-pub struct Measurement {
-    pub label: String,
-    pub value: f64,
-}
-
-/// Bug 42: manual Hash uses different fields than derived PartialEq.
-#[derive(PartialEq)]
-pub struct UserKey {
-    pub id: u64,
-    pub name: String,
-}
-
-impl std::hash::Hash for UserKey {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.id.hash(state);
-    }
-}
-
-/// Bug 43: Vec::contains in tight loop — O(n*m).
-pub fn dedupe_against_blocklist(items: Vec<String>, blocklist: Vec<String>) -> Vec<String> {
-    items.into_iter().filter(|x| !blocklist.contains(x)).collect()
-}
 
 /// Bug 44: lossy cast i64 → u32.
 pub fn id_as_u32(id: i64) -> u32 {

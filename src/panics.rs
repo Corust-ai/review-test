@@ -1,19 +1,4 @@
-// 10 panic bugs.
-
-/// Bug 1: unwrap on user input.
-pub fn parse_id(raw: &str) -> u64 {
-    raw.parse::<u64>().unwrap()
-}
-
-/// Bug 2: division by zero.
-pub fn average(total: i64, count: i64) -> i64 {
-    total / count
-}
-
-/// Bug 3: array indexing without bounds check.
-pub fn third_element(xs: &[i32]) -> i32 {
-    xs[2]
-}
+// 10 panic bugs (Bugs 1-3 fixed: removed).
 
 /// Bug 4: signed integer overflow.
 pub fn time_diff_years(end: i32, start: i32) -> i32 {

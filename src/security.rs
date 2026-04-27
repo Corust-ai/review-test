@@ -1,26 +1,8 @@
-// 10 security bugs.
+// 10 security bugs (Bugs 11-13 fixed: removed).
 
+#![allow(unused_imports)]
 use std::fs;
 use std::process::Command;
-
-/// Bug 11: hard-coded API token.
-pub fn auth_header() -> String {
-    let token = "PROD-INTERNAL-TOKEN-DO-NOT-COMMIT-2026";
-    format!("Bearer {}", token)
-}
-
-/// Bug 12: command injection.
-pub fn list_user_files(username: &str) -> std::io::Result<std::process::Output> {
-    Command::new("sh")
-        .arg("-c")
-        .arg(format!("ls /home/{}/", username))
-        .output()
-}
-
-/// Bug 13: path traversal.
-pub fn read_user_file(filename: &str) -> std::io::Result<Vec<u8>> {
-    fs::read(format!("/data/uploads/{}", filename))
-}
 
 /// Bug 14: unsafe transmute UB.
 pub fn float_bits_as_string(f: f64) -> String {

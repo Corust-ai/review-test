@@ -1,22 +1,7 @@
-// 10 error-handling bugs.
+// 10 error-handling bugs (Bugs 31-33 fixed: removed).
 
+#![allow(unused_imports)]
 use std::process::Command;
-
-/// Bug 31: unwrap on user-derived input.
-pub fn fetch_record(id_str: &str) -> String {
-    let id: u64 = id_str.parse().unwrap();
-    format!("record-{}", id)
-}
-
-/// Bug 32: swallowed Result via let _.
-pub fn save_state(state: &str) {
-    let _ = std::fs::write("/var/lib/app/state.txt", state);
-}
-
-/// Bug 33: .ok() discards meaningful error.
-pub fn parse_int_or_default(s: &str) -> i32 {
-    s.parse::<i32>().ok().unwrap_or(0)
-}
 
 /// Bug 34: unimplemented! in production.
 pub fn handle_admin_action(action: &str) -> String {

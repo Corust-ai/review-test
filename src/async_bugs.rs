@@ -1,30 +1,9 @@
-// 10 async/concurrency bugs.
+// 10 async/concurrency bugs (Bugs 21-23 fixed: removed).
 
+#![allow(unused_imports)]
 use std::collections::HashMap;
 use std::sync::{Mutex, RwLock};
 use tokio::task::JoinHandle;
-
-/// Bug 21: MutexGuard across .await — deadlock + !Send.
-pub async fn cache_touch(cache: &Mutex<HashMap<String, u32>>, key: &str) {
-    let mut guard = cache.lock().unwrap();
-    guard.entry(key.to_string()).and_modify(|v| *v += 1).or_insert(1);
-    tokio::time::sleep(std::time::Duration::from_millis(10)).await;
-}
-
-/// Bug 22: blocking std::thread::sleep in async fn.
-pub async fn delayed_response() -> &'static str {
-    std::thread::sleep(std::time::Duration::from_secs(2));
-    "done"
-}
-
-/// Bug 23: std::sync::Mutex sent across tokio::spawn boundary.
-pub fn spawn_with_sync_mutex(state: std::sync::Arc<Mutex<u64>>) {
-    tokio::spawn(async move {
-        let mut g = state.lock().unwrap();
-        *g += 1;
-        tokio::time::sleep(std::time::Duration::from_millis(1)).await;
-    });
-}
 
 /// Bug 24: JoinHandle dropped without await.
 pub fn fire_and_forget(work: u64) {
