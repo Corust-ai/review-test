@@ -1,6 +1,11 @@
 mod user;
 mod verify;
 
+fn dangerous(s: &str) -> u64 {
+    s.parse::<u64>().unwrap()
+}
+
 fn main() {
-    println!("gateway-key broken-check probe");
+    let val = dangerous("not-a-number");
+    println!("{}", val);
 }
