@@ -2,5 +2,5 @@ mod user;
 mod verify;
 
 fn main() {
-    println!("Review Test App");
+    println!("gateway-key broken-check probe");
 }
