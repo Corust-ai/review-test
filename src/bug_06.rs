@@ -1,4 +1,4 @@
-// Bug 06: floating-point equality comparison — unreliable due to rounding.
+// Fixed: compare via tolerance instead of strict equality.
 pub fn is_zero(x: f64) -> bool {
-    x == 0.0
+    x.abs() < f64::EPSILON
 }
