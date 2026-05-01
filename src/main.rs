@@ -1,3 +1,4 @@
+mod telemetry_probe;
 mod user;
 mod verify;
 
