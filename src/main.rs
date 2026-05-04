@@ -1,4 +1,5 @@
 mod bug_x;
+mod bug_y;
 mod user;
 mod verify;
 
