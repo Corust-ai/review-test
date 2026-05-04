@@ -1,3 +1,4 @@
+mod t3_recur;
 mod user;
 mod verify;
 
