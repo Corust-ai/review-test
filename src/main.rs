@@ -1,3 +1,4 @@
+mod t7_bug1;
 mod user;
 mod verify;
 
