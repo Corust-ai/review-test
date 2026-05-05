@@ -1,3 +1,4 @@
+mod shape_a_test;
 mod user;
 mod verify;
 
