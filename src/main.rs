@@ -1,3 +1,4 @@
+mod t5r_a;
 mod user;
 mod verify;
 
