@@ -1,3 +1,4 @@
+mod t4_baseline;
 mod user;
 mod verify;
 
