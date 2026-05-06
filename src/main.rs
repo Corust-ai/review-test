@@ -1,3 +1,4 @@
+mod t17_bug;
 mod user;
 mod verify;
 
