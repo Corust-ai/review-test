@@ -1,3 +1,4 @@
+mod t40_bug;
 mod user;
 mod verify;
 
