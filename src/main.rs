@@ -1,3 +1,4 @@
+mod t12_drift_a;
 mod user;
 mod verify;
 
