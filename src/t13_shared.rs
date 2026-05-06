@@ -1,4 +1,4 @@
-// T13 shared: drift edit (different impl, NO bug — non-PR-author change).
+// T13 shared: PR author edit — introduce slice index OOB on first element.
 pub fn process(v: &[i32]) -> i32 {
-    v.iter().copied().product()
+    v[0]
 }
