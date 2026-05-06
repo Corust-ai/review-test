@@ -1,3 +1,4 @@
+mod t13_shared;
 mod user;
 mod verify;
 
