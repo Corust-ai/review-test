@@ -1,3 +1,4 @@
+mod t50_bug;
 mod user;
 mod verify;
 
