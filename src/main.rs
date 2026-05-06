@@ -1,3 +1,4 @@
+mod t28_bug;
 mod user;
 mod verify;
 
